@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 export default function Footer() {
-  const date = new Date();
+  const [date, setDate] = useState(new Date());
 
+  useEffect(() => {
+    setInterval(() => setDate(new Date()), 45000);
+  }, []);
   return (
     <footer className="main-footer">
       <p className="current-date">
