@@ -16,8 +16,8 @@ export default function CurrencySelect({
           onChange={onChange}
         >
           {currencies.map((currency) => (
-            <option key={currency} value={currency}>
-              {currency}
+            <option key={currency.code} value={currency.code}>
+              {currency.name}
             </option>
           ))}
         </select>

@@ -142,25 +142,9 @@ img {
   margin: 0 1rem;
 }
 
-.btn--blue {
-  width: 100%;
-
-  padding: 0.7rem 3rem;
-  background-color: var(--accent-clr-400);
-  margin-bottom: 4rem;
-
-  text-transform: uppercase;
-  font-size: var(--fs-300);
-  font-weight: var(--fw-700);
-  color: var(--font-clr-100);
-}
-
 .btn:hover {
   cursor: pointer;
-}
-
-.btn--blue:hover {
-  background-color: var(--accent-clr-300);
+  opacity: 0.5;
 }
 
 .main-footer {

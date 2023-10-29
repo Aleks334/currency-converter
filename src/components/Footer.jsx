@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer className="main-footer">
       <p className="current-date">
-        {date.toLocaleDateString("pl-PL", {
+        {date.toLocaleDateString("en-US", {
           weekday: "long",
           year: "numeric",
           month: "long",
