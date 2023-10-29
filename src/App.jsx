@@ -5,6 +5,7 @@ import "./App.css";
 import CurrencySelect from "./components/CurrencySelect";
 import ExchangeRate from "./components/ExchangeRate";
 import ConverterInput from "./components/ConverterInput";
+import Footer from "./components/Footer";
 
 import SwapIcon from "./assets/swap-icon.png";
 
@@ -17,15 +18,19 @@ function App() {
   const [amount, setAmount] = useState(1);
   const [fromCurrency, setFromCurrency] = useState();
   const [toCurrency, setToCurrency] = useState();
-  const [exchangeRate, setExchangeRate] = useState();
+  const [exchangeRate, setExchangeRate] = useState(0);
+
+  console.log("exchange rate: " + exchangeRate);
 
   useEffect(() => {
     fetch(`${BASE_URL}/latest/EUR`)
       .then((res) => res.json())
       .then((data) => {
+        const firstCurr = Object.keys(data.conversion_rates)[0];
         setCurrencies(Object.keys(data.conversion_rates));
-        setFromCurrency(currencies[0]);
-        setToCurrency(currencies[0]);
+        setFromCurrency(data.base_code);
+        setToCurrency(firstCurr);
+        setExchangeRate(data.conversion_rates[firstCurr]);
       })
       .catch((error) => console.error(error));
   }, []);
@@ -51,7 +56,7 @@ function App() {
 
       <main className="main-content">
         <section className="currency-converter">
-          <ExchangeRate rate={exchangeRate} />
+          <ExchangeRate rate={exchangeRate} amount={amount} />
 
           <form>
             <ConverterInput
@@ -82,9 +87,7 @@ function App() {
         </section>
       </main>
 
-      <footer className="main-footer">
-        <p className="current-date">Sunday, 29.10.2023 19:30</p>
-      </footer>
+      <Footer />
     </>
   );
 }

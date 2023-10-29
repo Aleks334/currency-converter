@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function ConverterInput({ value, onChange }) {
+export default function ConverterInput({ value, onChangeAmount }) {
   return (
     <>
       <label className="label" htmlFor="amount">
@@ -12,8 +12,8 @@ export default function ConverterInput({ value, onChange }) {
         id="amount"
         name="amount"
         value={value}
-        onChange={onChange}
-        maxLength={12}
+        onChange={onChangeAmount}
+        maxLength={9}
       />
     </>
   );
