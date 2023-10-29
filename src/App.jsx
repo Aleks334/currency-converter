@@ -1,7 +1,12 @@
-import "./App.css";
-import CurrencySelect from "./components/CurrencySelect";
-import SwapIcon from "./assets/swap-icon.png";
 import { useEffect, useState } from "react";
+
+import "./App.css";
+
+import CurrencySelect from "./components/CurrencySelect";
+import ExchangeRate from "./components/ExchangeRate";
+import ConverterInput from "./components/ConverterInput";
+
+import SwapIcon from "./assets/swap-icon.png";
 
 const BASE_URL = `https://v6.exchangerate-api.com/v6/${
   import.meta.env.VITE_API_KEY
@@ -9,50 +14,69 @@ const BASE_URL = `https://v6.exchangerate-api.com/v6/${
 
 function App() {
   const [currencies, setCurrencies] = useState([]);
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState(1);
+  const [fromCurrency, setFromCurrency] = useState();
+  const [toCurrency, setToCurrency] = useState();
+  const [exchangeRate, setExchangeRate] = useState();
 
   useEffect(() => {
-    fetch(`${BASE_URL}/codes`)
+    fetch(`${BASE_URL}/latest/EUR`)
       .then((res) => res.json())
-      .then((data) =>
-        setCurrencies(
-          data.supported_codes.reduce(
-            (prev, curr) => [
-              ...prev,
-              { code: curr[0], name: curr[1] },
-            ],
-            []
-          )
-        )
-      )
+      .then((data) => {
+        setCurrencies(Object.keys(data.conversion_rates));
+        setFromCurrency(currencies[0]);
+        setToCurrency(currencies[0]);
+      })
       .catch((error) => console.error(error));
   }, []);
+
+  useEffect(() => {
+    if (fromCurrency == null || toCurrency == null) return;
+
+    fetch(`${BASE_URL}/pair/${fromCurrency}/${toCurrency}`)
+      .then((res) => res.json())
+      .then((data) => setExchangeRate(data.conversion_rate));
+  }, [fromCurrency, toCurrency]);
+
+  function handleOnChangeAmount(e) {
+    const result = e.target.value.replace(/\D/g, "");
+    setAmount(Number(result));
+  }
 
   return (
     <>
       <header>
-        <h1 className="main-heading">1Simple Currency Converter</h1>
+        <h1 className="main-heading">Simple Currency Converter</h1>
       </header>
 
       <main className="main-content">
         <section className="currency-converter">
-          <div className="center-vertical">
-            <h2 className="rate-heading">Exchange Rate</h2>
-            <p className="rate-result">$27.77</p>
-          </div>
+          <ExchangeRate rate={exchangeRate} />
 
           <form>
-            <label className="label" htmlFor="amount">
-              Amount
-            </label>
-            <input type="number" className="input" id="amount" />
+            <ConverterInput
+              value={amount}
+              onChangeAmount={handleOnChangeAmount}
+            />
+
             <div className="currencies">
-              <CurrencySelect label="From" currencies={currencies} />
+              <CurrencySelect
+                label="From"
+                currencies={currencies}
+                currentCurrency={fromCurrency}
+                onChange={(e) => setFromCurrency(e.target.value)}
+              />
               <button className="btn btn--image" type="button">
                 <img src={SwapIcon} alt="Swap currencies" />
               </button>
-              <CurrencySelect label="To" currencies={currencies} />
+              <CurrencySelect
+                label="To"
+                currencies={currencies}
+                currentCurrency={toCurrency}
+                onChange={(e) => setToCurrency(e.target.value)}
+              />
             </div>
+
             <button className="btn btn--blue">Convert</button>
           </form>
         </section>
