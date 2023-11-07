@@ -4,7 +4,7 @@ export default function ExchangeRate({ rate, amount }) {
 	return (
 		<div className="center-vertical">
 			<h2 className="rate-heading">Exchange rate</h2>
-			<p className="rate-result">{(rate * amount).toFixed(2)}</p>
+			<p className="rate-result">{(rate * amount).toFixed(4)}</p>
 		</div>
 	);
 }

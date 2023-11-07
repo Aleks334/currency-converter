@@ -11,7 +11,6 @@ import {
 	ActivityIndicator,
 } from "./components";
 
-import { BASE_URL } from "./utils/baseUrl";
 import { fetchAllCurrencies, fetchLatestConversions, fetchCurrenciesPair } from "./services";
 
 function App() {
@@ -60,7 +59,6 @@ function App() {
 			const rate = await fetchCurrenciesPair(from, to);
 
 			setExchangeRate(rate);
-			console.log("exchange rate: " + exchangeRate);
 		} catch (error) {
 			alert("Unexpected error occured. Please try again.");
 			console.error("Unexpected error during data fetching: " + error);
@@ -68,14 +66,6 @@ function App() {
 			setIsLoading(false);
 		}
 	};
-
-	/*useEffect(() => {
-		if (fromCurrency == null || toCurrency == null) return;
-
-		fetch(`${BASE_URL}/pair/${fromCurrency}/${toCurrency}`)
-			.then((res) => res.json())
-			.then((data) => setExchangeRate(data.conversion_rate));
-	}, [fromCurrency, toCurrency]);*/
 
 	function handleCurrenciesAmountChange(e) {
 		const result = e.target.value;
@@ -86,25 +76,19 @@ function App() {
 		const temp = fromCurrency;
 		setFromCurrency(toCurrency);
 		setToCurrency(temp);
-		fetchNewCurrencies(fromCurrency, toCurrency);
+		fetchNewCurrencies(toCurrency, temp);
 	}
 
 	function handleFromCurrencyChange(e) {
 		const value = e.target.value;
 		setFromCurrency(value);
-		console.log("handle. from: " + fromCurrency + ". To: " + toCurrency);
-		fetchNewCurrencies(fromCurrency, toCurrency);
+		fetchNewCurrencies(value, toCurrency);
 	}
 
 	function handleToCurrencyChange(e) {
 		const value = e.target.value;
 		setToCurrency(value);
-		console.log("handle. from: " + fromCurrency + ". To: " + toCurrency);
-		fetchNewCurrencies(fromCurrency, toCurrency);
-	}
-
-	function handleFormSubmit(e) {
-		e.preventDefault();
+		fetchNewCurrencies(fromCurrency, value);
 	}
 
 	return (
@@ -124,7 +108,7 @@ function App() {
 
 					<form
 						action="#"
-						onSubmit={handleFormSubmit}
+						onSubmit={(e) => e.preventDefault()}
 					>
 						<ConverterInput
 							value={amount}
