@@ -2,108 +2,130 @@ import { useEffect, useState } from "react";
 
 import "./App.css";
 
-import CurrencySelect from "./components/CurrencySelect";
-import ExchangeRate from "./components/ExchangeRate";
-import ConverterInput from "./components/ConverterInput";
-import Footer from "./components/Footer";
-import SwapCurrenciesBtn from "./components/SwapCurrenciesBtn";
+import {
+	CurrencySelect,
+	ExchangeRate,
+	ConverterInput,
+	Footer,
+	SwapCurrenciesBtn,
+} from "./components";
 
-const BASE_URL = `https://v6.exchangerate-api.com/v6/${
-  import.meta.env.VITE_API_KEY
-}`;
+import { BASE_URL } from "./utils/baseUrl";
+import { fetchAllCurrencies, fetchLatestConversions, fetchCurrenciesPair } from "./services";
 
 function App() {
-  const [currencies, setCurrencies] = useState([]);
-  const [amount, setAmount] = useState(1);
-  const [fromCurrency, setFromCurrency] = useState();
-  const [toCurrency, setToCurrency] = useState();
-  const [exchangeRate, setExchangeRate] = useState(0);
+	const [currencies, setCurrencies] = useState([]);
+	const [amount, setAmount] = useState(1);
+	const [fromCurrency, setFromCurrency] = useState();
+	const [toCurrency, setToCurrency] = useState();
+	const [exchangeRate, setExchangeRate] = useState(0);
 
-  useEffect(() => {
-    fetch(`${BASE_URL}/codes`)
-      .then((res) => res.json())
-      .then((data) => {
-        setCurrencies(
-          data.supported_codes.reduce(
-            (prev, curr) => [
-              ...prev,
-              { code: curr[0], name: curr[1] },
-            ],
-            []
-          )
-        );
-      });
-  }, []);
+	useEffect(() => {
+		async function init() {
+			const currencies = await fetchAllCurrencies();
+			setCurrencies(currencies);
 
-  useEffect(() => {
-    fetch(`${BASE_URL}/latest/EUR`)
-      .then((res) => res.json())
-      .then((data) => {
-        const firstCurr = Object.keys(data.conversion_rates)[0];
-        setFromCurrency(data.base_code);
-        setToCurrency(firstCurr);
-        setExchangeRate(data.conversion_rates[firstCurr]);
-      })
-      .catch((error) => console.error(error));
-  }, [currencies]);
+			const latestConversions = await fetchLatestConversions();
 
-  useEffect(() => {
-    if (fromCurrency == null || toCurrency == null) return;
+			const rates = latestConversions.conversion_rates;
+			const baseCurrency = latestConversions.base_code;
 
-    fetch(`${BASE_URL}/pair/${fromCurrency}/${toCurrency}`)
-      .then((res) => res.json())
-      .then((data) => setExchangeRate(data.conversion_rate));
-  }, [fromCurrency, toCurrency]);
+			const firstCurr = Object.keys(rates)[0];
+			setFromCurrency(baseCurrency);
+			setToCurrency(firstCurr);
+			setExchangeRate(rates[firstCurr]);
+		}
 
-  function handleOnChangeAmount(e) {
-    const result = e.target.value.replace(/\D/g, "");
-    setAmount(Number(result));
-  }
+		init();
+	}, []);
 
-  function handleOnClick() {
-    const temp = fromCurrency;
-    setFromCurrency(toCurrency);
-    setToCurrency(temp);
-  }
+	async function fetchNewCurrencies(from, to) {
+		if (from == null || to == null) {
+			console.error("from and to currencies are null!");
+			return;
+		}
+		await fetchCurrenciesPair(from, to).then((rate) => {
+			setExchangeRate(rate);
+			console.log("exchange rate: " + exchangeRate);
+		});
+	}
 
-  return (
-    <>
-      <header>
-        <h1 className="main-heading">Simple Currency Converter</h1>
-      </header>
+	/*useEffect(() => {
+		if (fromCurrency == null || toCurrency == null) return;
 
-      <main className="main-content">
-        <section className="currency-converter">
-          <ExchangeRate rate={exchangeRate} amount={amount} />
+		fetch(`${BASE_URL}/pair/${fromCurrency}/${toCurrency}`)
+			.then((res) => res.json())
+			.then((data) => setExchangeRate(data.conversion_rate));
+	}, [fromCurrency, toCurrency]);*/
 
-          <form>
-            <ConverterInput
-              value={amount}
-              onChangeAmount={handleOnChangeAmount}
-            />
+	function handleCurrenciesAmountChange(e) {
+		const result = e.target.value;
+		setAmount(Number(result));
+	}
 
-            <div className="currencies">
-              <CurrencySelect
-                label="From"
-                currencies={currencies}
-                currentCurrency={fromCurrency}
-                onChange={(e) => setFromCurrency(e.target.value)}
-              />
-              <SwapCurrenciesBtn handleOnClick={handleOnClick} />
-              <CurrencySelect
-                label="To"
-                currencies={currencies}
-                currentCurrency={toCurrency}
-                onChange={(e) => setToCurrency(e.target.value)}
-              />
-            </div>
-          </form>
-        </section>
-      </main>
+	function handleSwapCurrencies() {
+		const temp = fromCurrency;
+		setFromCurrency(toCurrency);
+		setToCurrency(temp);
+	}
 
-      <Footer />
-    </>
-  );
+	function handleFromCurrencyChange(e) {
+		const value = e.target.value;
+		setFromCurrency(value);
+		console.log("handle. from: " + fromCurrency + ". To: " + toCurrency);
+		fetchNewCurrencies(fromCurrency, toCurrency);
+	}
+
+	function handleToCurrencyChange(e) {
+		const value = e.target.value;
+		setToCurrency(value);
+		console.log("handle. from: " + fromCurrency + ". To: " + toCurrency);
+		fetchNewCurrencies(fromCurrency, toCurrency);
+	}
+
+	return (
+		<>
+			<header>
+				<h1 className="main-heading">Simple Currency Converter</h1>
+			</header>
+
+			<main className="main-content">
+				<section className="currency-converter">
+					<ExchangeRate
+						rate={exchangeRate}
+						amount={amount}
+					/>
+
+					<form action="#">
+						<ConverterInput
+							value={amount}
+							onChangeAmount={handleCurrenciesAmountChange}
+						/>
+
+						<div className="currencies">
+							<CurrencySelect
+								label="From"
+								currencies={currencies}
+								currentCurrency={fromCurrency}
+								onChange={handleFromCurrencyChange}
+							/>
+
+							<SwapCurrenciesBtn handleOnClick={handleSwapCurrencies} />
+
+							<CurrencySelect
+								label="To"
+								currencies={currencies}
+								currentCurrency={toCurrency}
+								onChange={handleToCurrencyChange}
+							/>
+						</div>
+					</form>
+				</section>
+			</main>
+
+			<Footer />
+		</>
+	);
 }
 
 export default App;
