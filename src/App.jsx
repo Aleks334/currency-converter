@@ -8,6 +8,7 @@ import {
 	ConverterInput,
 	Footer,
 	SwapCurrenciesBtn,
+	ActivityIndicator,
 } from "./components";
 
 import { BASE_URL } from "./utils/baseUrl";
@@ -19,6 +20,8 @@ function App() {
 	const [fromCurrency, setFromCurrency] = useState();
 	const [toCurrency, setToCurrency] = useState();
 	const [exchangeRate, setExchangeRate] = useState(0);
+
+	const [isLoading, setIsLoading] = useState(false);
 
 	useEffect(() => {
 		async function init() {
@@ -36,19 +39,35 @@ function App() {
 			setExchangeRate(rates[firstCurr]);
 		}
 
-		init();
+		try {
+			setIsLoading(true);
+			init();
+		} catch (error) {
+			alert("Unexpected error occured. Please try again.");
+			console.error("Unexpected error during data fetching: " + error);
+		} finally {
+			setIsLoading(false);
+		}
 	}, []);
 
-	async function fetchNewCurrencies(from, to) {
+	const fetchNewCurrencies = async (from, to) => {
 		if (from == null || to == null) {
 			console.error("from and to currencies are null!");
 			return;
 		}
-		await fetchCurrenciesPair(from, to).then((rate) => {
-			setExchangeRate(rate);
-			console.log("exchange rate: " + exchangeRate);
-		});
-	}
+		try {
+			setIsLoading(true);
+			await fetchCurrenciesPair(from, to).then((rate) => {
+				setExchangeRate(rate);
+				console.log("exchange rate: " + exchangeRate);
+			});
+		} catch (error) {
+			alert("Unexpected error occured. Please try again.");
+			console.error("Unexpected error during data fetching: " + error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	/*useEffect(() => {
 		if (fromCurrency == null || toCurrency == null) return;
@@ -85,6 +104,8 @@ function App() {
 
 	return (
 		<>
+			<ActivityIndicator isLoading={isLoading} />
+
 			<header>
 				<h1 className="main-heading">Simple Currency Converter</h1>
 			</header>
