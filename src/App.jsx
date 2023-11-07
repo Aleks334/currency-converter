@@ -52,15 +52,15 @@ function App() {
 
 	const fetchNewCurrencies = async (from, to) => {
 		if (from == null || to == null) {
-			console.error("from and to currencies are null!");
+			console.error("from and/or to currencies are null!");
 			return;
 		}
 		try {
 			setIsLoading(true);
-			await fetchCurrenciesPair(from, to).then((rate) => {
-				setExchangeRate(rate);
-				console.log("exchange rate: " + exchangeRate);
-			});
+			const rate = await fetchCurrenciesPair(from, to);
+
+			setExchangeRate(rate);
+			console.log("exchange rate: " + exchangeRate);
 		} catch (error) {
 			alert("Unexpected error occured. Please try again.");
 			console.error("Unexpected error during data fetching: " + error);
@@ -86,6 +86,7 @@ function App() {
 		const temp = fromCurrency;
 		setFromCurrency(toCurrency);
 		setToCurrency(temp);
+		fetchNewCurrencies(fromCurrency, toCurrency);
 	}
 
 	function handleFromCurrencyChange(e) {
