@@ -35,7 +35,13 @@ cd currency-converter
 npm i
 ```
 
-4. Run the development server (Vite):
+4. Add .env file in the root directory of project. Include there this line:
+
+```
+VITE_API_KEY=your_api_key
+```
+
+5. Run the development server (Vite):
 
 ```
 npm run dev
