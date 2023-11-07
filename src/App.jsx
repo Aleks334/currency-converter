@@ -103,6 +103,10 @@ function App() {
 		fetchNewCurrencies(fromCurrency, toCurrency);
 	}
 
+	function handleFormSubmit(e) {
+		e.preventDefault();
+	}
+
 	return (
 		<>
 			<ActivityIndicator isLoading={isLoading} />
@@ -118,7 +122,10 @@ function App() {
 						amount={amount}
 					/>
 
-					<form action="#">
+					<form
+						action="#"
+						onSubmit={handleFormSubmit}
+					>
 						<ConverterInput
 							value={amount}
 							onChangeAmount={handleCurrenciesAmountChange}
